@@ -9,7 +9,7 @@ from pymongo.errors import AutoReconnect
  {
   'lineNumber': 38,
   'exception': {
-                'stactTrace': 'Traceback (most recent call last):
+                'stackTrace': 'Traceback (most recent call last):
                                File "/var/projects/python/log4mongo-python/tests/test_mongo_handler.py", line 36, in test_emit_exception
                                raise Exception(\'exc1\')
                                Exception: exc1',
@@ -47,7 +47,7 @@ class MongoFormatter(logging.Formatter):
                 'exception': {
                     'message': str(record.exc_info[1]),
                     'code': 0,
-                    'stactTrace': self.formatException(record.exc_info)
+                    'stackTrace': self.formatException(record.exc_info)
                 }
             })
 
