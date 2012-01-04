@@ -25,10 +25,15 @@ from pymongo.errors import AutoReconnect
   'loggerName': 'testLogger'
 }
 """
-class MongoFormatter(logging.Formatter):
+class MongoFormatter(logging.Formatter, object):
     """
     formats LogRecord into python dictionary
     """
+
+    def __init__(self, fmt=None, datefmt=None, logger_name=None):
+        super(MongoFormatter, self).__init__(fmt, datefmt)
+        self.logger_name = logger_name
+
 
     def format(self, record):
         document = {
@@ -36,7 +41,7 @@ class MongoFormatter(logging.Formatter):
             'level': record.levelname,
             'thread': record.thread,
             'message': record.getMessage(),
-            'loggerName': record.name,
+            'loggerName': self.logger_name if self.logger_name else record.name,
             'fileName': record.pathname,
             'method': record.funcName,
             'lineNumber': record.lineno
@@ -61,7 +66,7 @@ class MongoHandler(logging.Handler):
     """
 
     def __init__(self, level=logging.NOTSET, host='localhost', port=27017, database_name='logs', collection='logs',
-                 username=None, password=None, fail_silently=False):
+                 username=None, password=None, fail_silently=False, logger_name=None):
         logging.Handler.__init__(self, level)
         self.host = host
         self.port = port
@@ -76,7 +81,7 @@ class MongoHandler(logging.Handler):
         self.collection = None
         self.authenticated = False
 
-        self.formatter = MongoFormatter()
+        self.formatter = MongoFormatter(logger_name=logger_name)
 
         self._connect()
 
@@ -97,7 +102,6 @@ class MongoHandler(logging.Handler):
         if self.username is not None and self.password is not None:
             self.authenticated = self.db.authenticate(self.username, self.password)
         self.collection = self.db[self.collection_name]
-
 
     """
     if authenticated, logging out and closing mongodb connection

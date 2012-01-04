@@ -53,12 +53,28 @@ class TestMongoHandler(unittest.TestCase):
         handler.close()
         log.removeHandler(handler)
 
+    def test_logger_name(self):
+        log = logging.getLogger('testLogger')
+        handler = MongoHandler(host='localhost', database_name=self.db_name, collection=self.cl_name, logger_name='meh')
+        log.addHandler(handler)
+
+        try:
+            raise Exception('exc1')
+        except:
+            log.exception('test message')
+
+        document = handler.collection.find_one({'message': 'test message', 'level': 'ERROR'})
+        self.assertEquals(document['loggerName'], 'meh')
+
+        handler.close()
+        log.removeHandler(handler)
+
+
     def test_emit_fail(self):
         log = logging.getLogger('testLogger')
-        handler = MongoHandler(host='localhost', database_name=self.db_name, collection=self.cl_name,
+        handler = MongoHandler(host='localhost', database_name=self.db_name, collection='meh',
                                fail_silently=True)
         log.addHandler(handler)
-        handler.collection = 'meh'
 
         try:
             log.warning('test message')
@@ -68,10 +84,9 @@ class TestMongoHandler(unittest.TestCase):
         handler.close()
         log.removeHandler(handler)
 
-        handler = MongoHandler(host='localhost', database_name=self.db_name, collection=self.cl_name,
+        handler = MongoHandler(host='localhost', database_name=self.db_name, collection='meh',
                                fail_silently=False)
         log.addHandler(handler)
-        handler.collection = 'meh'
 
         try:
             log.warning('test message')
